@@ -1,25 +1,25 @@
-window.DuplicateWordsApp.FormsModule = function(dict) {
+window.DuplicateWordsApp.WordFormsModule = function(dict) {
   "use strict";
 
   var wordFormsHandler = function(word) {
     if (dict.exceptions.indexOf(word) !== -1) {
       return [];
     }
-    
+
     var wordRoot = word; // корень без аффиксов
     var wordRootPrefixed = word; // корень с приставкой (для расширенного сопоставления)
     var wordRootSuffixed = word; // корень с суффиксом (для расширенного сопоставления)
     var wordRootMatched = false; // наличие проблемного корня
-    
+
     if (dict.immutableRoots.indexOf(wordRoot) !== -1 || dict.unbreakableRoots.indexOf(wordRoot) !== -1) { 
       return [word, wordRoot, wordRootPrefixed, wordRootSuffixed]; 
     }
 
     for (var r = dict.unbreakableRoots.length - 1; r >= 0; --r) { // проверка на наличие проблемного корня
       if (word.length < dict.unbreakableRoots[r].length) { 
-        continue; 
+        continue;
       }
-      if (word.indexOf(dict.unbreakableRoots[r]) !== -1){
+      if (word.indexOf(dict.unbreakableRoots[r]) !== -1) {
         wordRootMatched = dict.unbreakableRoots[r];
         break;
       }
@@ -34,13 +34,17 @@ window.DuplicateWordsApp.FormsModule = function(dict) {
       [dict.prefixes, -3]
     ];
 
-    for (var p = 0; p < parseSequence.length; ++p) { // отсечение аффиксов от слова
+    // если слово длинное, нужно дополнительное отсечение суффиксов
+    if (word.length > 12) {
+      parseSequence.splice(2, 0, [dict.suffixes, 3]);
+    }
 
+    for (var p = 0; p < parseSequence.length; ++p) { // отсечение аффиксов от слова
       var affixes = parseSequence[p][0]; 
       var minRootSize = parseSequence[p][1];
       var possibleAffixLength = wordRoot.length - Math.abs(minRootSize);
       var wordChunk = '';
-      
+
       for (var i = affixes.length - 1; i >= 0; --i) {
         if (affixes[i].length > possibleAffixLength) {
           continue; 
@@ -73,7 +77,7 @@ window.DuplicateWordsApp.FormsModule = function(dict) {
         break; 
       }
     }
-    
+
 //console.log([word, wordRoot, wordRootPrefixed, wordRootSuffixed]); 
 
     return [word, wordRoot, wordRootPrefixed, wordRootSuffixed];
